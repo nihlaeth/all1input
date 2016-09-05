@@ -4,6 +4,7 @@ import asyncio
 from threading import Lock, Thread
 import evdev
 import mouse
+import keyboard
 
 #pylint: disable=invalid-name,unused-argument,no-member
 mouse_movement = [0, 0, 0]
@@ -39,6 +40,10 @@ async def dispatch_events(device):
                 mouse_movement[2] += event.value
 
             mouse_lock.release()
+        elif event.type == evdev.ecodes.EV_SYN:
+            pass
+        elif event.type == evdev.ecodes.EV_KEY:
+            keyboard.key(event)
         else:
             print(device.fn, evdev.categorize(event), sep=': ')
 
