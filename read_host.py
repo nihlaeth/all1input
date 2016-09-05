@@ -1,19 +1,19 @@
 """Read input decices and pass on data."""
 import asyncio
-from threading import Timer, Lock
+from threading import Timer, Lock, Thread
 import evdev
 import mouse
 
 #pylint: disable=invalid-name,unused-argument,no-member
-mouse_movement = [0, 0, 0]
+mouse_movement = [0, 0, 0, 0]
 mouse_lock = Lock()
 
-class Periodic(object):
-    """
-    A periodic task running in threading.Timers
-    """
+class Periodic(Thread):
+
+    """A periodic task running in separate thread."""
 
     def __init__(self, interval, function, *args, **kwargs):
+        Thread.__init__(self)
         self._lock = Lock()
         self._timer = None
         self.function = function
@@ -26,6 +26,7 @@ class Periodic(object):
 
     def start(self, from_run=False):
         """Start timer, reschedule."""
+        Thread.start(self)
         self._lock.acquire()
         if from_run or self._stopped:
             self._stopped = False
@@ -49,11 +50,12 @@ def move_mouse(*args, **kwargs):
     mouse_lock.acquire()
     if any([value != 0 for value in mouse_movement]):
         print("move mouse")
-        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
+        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[3])
         # todo: check return value
         mouse_movement[0] = 0
         mouse_movement[1] = 0
         mouse_movement[2] = 0
+        mouse_movement[3] = 0
     mouse_lock.release()
 
 async def dispatch_events(device):
