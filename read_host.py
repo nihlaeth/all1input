@@ -24,15 +24,13 @@ class MoveMouse(Thread):
                 mouse_movement[1] = 0
                 mouse_movement[2] = 0
             mouse_lock.release()
-            sleep(0.05)
+            sleep(0.1)
 
 async def dispatch_events(device):
     """Send events on to the correct location."""
     async for event in device.async_read_loop():
-        print(device.fn, evdev.categorize(event), sep=': ')
         if event.type == evdev.ecodes.EV_REL:
             mouse_lock.acquire()
-            print("event code {} value {}".format(event.code, event.value))
             if event.code == 0:
                 mouse_movement[0] += event.value
             elif event.code == 1:
@@ -41,6 +39,9 @@ async def dispatch_events(device):
                 mouse_movement[2] += event.value
 
             mouse_lock.release()
+        else:
+            print(device.fn, evdev.categorize(event), sep=': ')
+
 
 def match_dev(name):
     """Check device name for suitable input devices."""
