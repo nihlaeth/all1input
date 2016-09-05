@@ -30,7 +30,7 @@ class Periodic(Thread):
         if from_run or self._stopped:
             self._stopped = False
             self._timer = Timer(self.interval, self._run)
-            self._timer.start_timer()
+            self._timer.start()
             self._lock.release()
 
     def _run(self):
