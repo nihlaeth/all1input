@@ -38,6 +38,7 @@ class Periodic(Thread):
         self.function(*self.args, **self.kwargs)
 
     def run(self):
+        print("start timer")
         self.start_timer()
 
     def stop(self):
@@ -66,7 +67,13 @@ async def dispatch_events(device):
         if event.type == evdev.ecodes.EV_REL:
             mouse_lock.acquire()
             print("event code {} value {}".format(event.code, event.value))
-            mouse_movement[event.code] += event.value
+            if event.code == 0:
+                mouse_movement[0] += event.value
+            elif event.code == 1:
+                mouse_movement[1] += event.value
+            elif event.code == 8:  # scroll wheel
+                mouse_movement[2] += event.value
+
             mouse_lock.release()
 
 def match_dev(name):
@@ -100,5 +107,6 @@ if __name__ == "__main__":
         loop.run_forever()
     finally:
         mouse_mover.stop()
+        mouse_mover.join()
         for dev in devices:
             dev.ungrab()
