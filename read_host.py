@@ -24,7 +24,7 @@ class MoveMouse(Thread):
                 mouse_movement[1] = 0
                 mouse_movement[2] = 0
             mouse_lock.release()
-            sleep(0.01)
+            sleep(0.05)
 
 async def dispatch_events(device):
     """Send events on to the correct location."""

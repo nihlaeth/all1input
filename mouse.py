@@ -7,8 +7,8 @@ size_x, size_y = pyautogui.size()
 def move(delta_x, delta_y, delta_wheel):
     """Move mouse to new position and/or exit screen."""
     pos_x, pos_y = pyautogui.position()
-    fut_x = pos_x + delta_x
-    fut_y = pos_y + delta_y
+    fut_x = pos_x + delta_x * 2
+    fut_y = pos_y + delta_y * 2
     # todo: implement scrolling (delta_wheel)
 
     if pyautogui.onScreen(fut_x, fut_y):
