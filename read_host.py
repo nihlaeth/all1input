@@ -1,53 +1,13 @@
 """Read input decices and pass on data."""
 from time import sleep
 import asyncio
-from threading import Timer, Lock, Thread
+from threading import Lock, Thread
 import evdev
 import mouse
 
 #pylint: disable=invalid-name,unused-argument,no-member
 mouse_movement = [0, 0, 0]
 mouse_lock = Lock()
-
-class Periodic(Thread):
-
-    """A periodic task running in separate thread."""
-
-    def __init__(self, interval, function, *args, **kwargs):
-        Thread.__init__(self)
-        self._lock = Lock()
-        self._timer = None
-        self.function = function
-        self.interval = interval
-        self.args = args
-        self.kwargs = kwargs
-        self._stopped = True
-        if kwargs.pop('autostart_timer', True):
-            self.start_timer()
-
-    def start_timer(self, from_run=False):
-        """Start timer, reschedule."""
-        self._lock.acquire()
-        if from_run or self._stopped:
-            self._stopped = False
-            self._timer = Timer(self.interval, self._run)
-            self._timer.start()
-            self._lock.release()
-
-    def _run(self):
-        self.start_timer(from_run=True)
-        self.function(*self.args, **self.kwargs)
-
-    def run(self):
-        print("start timer")
-        self.start_timer()
-
-    def stop(self):
-        """Stop rescheduling."""
-        self._lock.acquire()
-        self._stopped = True
-        self._timer.cancel()
-        self._lock.release()
 
 class MoveMouse(Thread):
 
@@ -64,7 +24,7 @@ class MoveMouse(Thread):
                 mouse_movement[1] = 0
                 mouse_movement[2] = 0
             mouse_lock.release()
-            sleep(0.1)
+            sleep(0.01)
 
 async def dispatch_events(device):
     """Send events on to the correct location."""
