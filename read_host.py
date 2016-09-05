@@ -1,4 +1,5 @@
 """Read input decices and pass on data."""
+from time import sleep
 import asyncio
 from threading import Timer, Lock, Thread
 import evdev
@@ -48,17 +49,22 @@ class Periodic(Thread):
         self._timer.cancel()
         self._lock.release()
 
-def move_mouse(*args, **kwargs):
+class MoveMouse(Thread):
+
     """Pass on aggregated mouse movements."""
-    mouse_lock.acquire()
-    if any([value != 0 for value in mouse_movement]):
-        print("move mouse")
-        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
-        # todo: check return value
-        mouse_movement[0] = 0
-        mouse_movement[1] = 0
-        mouse_movement[2] = 0
-    mouse_lock.release()
+
+    def run(self):
+        while True:
+            mouse_lock.acquire()
+            if any([value != 0 for value in mouse_movement]):
+                print("move mouse")
+                mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
+                # todo: check return value
+                mouse_movement[0] = 0
+                mouse_movement[1] = 0
+                mouse_movement[2] = 0
+            mouse_lock.release()
+            sleep(0.1)
 
 async def dispatch_events(device):
     """Send events on to the correct location."""
@@ -100,13 +106,11 @@ if __name__ == "__main__":
             dev.grab()
             print("grab")
             asyncio.ensure_future(dispatch_events(dev))
-    mouse_mover = Periodic(0.1, move_mouse)
+    mouse_mover = MoveMouse()
     mouse_mover.start()
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
     finally:
-        mouse_mover.stop()
-        mouse_mover.join()
         for dev in devices:
             dev.ungrab()
