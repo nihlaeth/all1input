@@ -39,6 +39,7 @@ class Periodic(Thread):
 
     def stop(self):
         """Stop rescheduling."""
+        Thread.stop(self)
         self._lock.acquire()
         self._stopped = True
         self._timer.cancel()
@@ -63,6 +64,7 @@ async def dispatch_events(device):
         print(device.fn, evdev.categorize(event), sep=': ')
         if event.type == evdev.ecodes.EV_REL:
             mouse_lock.acquire()
+            print("event code {}".format(event.value))
             mouse_movement[event.code] += event.value
             mouse_lock.release()
 
