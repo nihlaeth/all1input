@@ -5,7 +5,7 @@ import evdev
 import mouse
 
 #pylint: disable=invalid-name,unused-argument,no-member
-mouse_movement = [0, 0, 0, 0]
+mouse_movement = [0, 0, 0]
 mouse_lock = Lock()
 
 class Periodic(Thread):
@@ -37,9 +37,11 @@ class Periodic(Thread):
         self.start_timer(from_run=True)
         self.function(*self.args, **self.kwargs)
 
+    def run(self):
+        self.start_timer()
+
     def stop(self):
         """Stop rescheduling."""
-        Thread.stop(self)
         self._lock.acquire()
         self._stopped = True
         self._timer.cancel()
@@ -50,12 +52,11 @@ def move_mouse(*args, **kwargs):
     mouse_lock.acquire()
     if any([value != 0 for value in mouse_movement]):
         print("move mouse")
-        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[3])
+        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
         # todo: check return value
         mouse_movement[0] = 0
         mouse_movement[1] = 0
         mouse_movement[2] = 0
-        mouse_movement[3] = 0
     mouse_lock.release()
 
 async def dispatch_events(device):
@@ -64,7 +65,7 @@ async def dispatch_events(device):
         print(device.fn, evdev.categorize(event), sep=': ')
         if event.type == evdev.ecodes.EV_REL:
             mouse_lock.acquire()
-            print("event code {}".format(event.value))
+            print("event code {} value {}".format(event.code, event.value))
             mouse_movement[event.code] += event.value
             mouse_lock.release()
 
@@ -94,7 +95,6 @@ if __name__ == "__main__":
             asyncio.ensure_future(dispatch_events(dev))
     mouse_mover = Periodic(0.1, move_mouse)
     mouse_mover.start()
-    mouse_mover.start_timer()
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
