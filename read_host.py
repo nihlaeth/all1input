@@ -17,7 +17,8 @@ if __name__ == "__main__":
                 "keyboard" in device.name or \
                 "HID" in device.name or \
                 "Mouse" in device.name or \
-                "mouse" in device.name:
+                "mouse" in device.name or \
+                "Logitech" in device.name:
             devices.append(device)
             device.grab()
             print("grab")
