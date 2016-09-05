@@ -1,11 +1,15 @@
+"""Mouse control."""
+#pylint: disable=invalid-name,unused-argument,import-error
 import pyautogui
+
 size_x, size_y = pyautogui.size()
 
-def move(delta_x, delta_y):
+def move(delta_x, delta_y, delta_z):
     """Move mouse to new position and/or exit screen."""
     pos_x, pos_y = pyautogui.position()
     fut_x = pos_x + delta_x
     fut_y = pos_y + delta_y
+    # todo: implement scrolling (delta_z)
 
     if pyautogui.onScreen(fut_x, fut_y):
         pyautogui.moveTo(fut_x, fut_y, 0)

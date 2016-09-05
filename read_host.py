@@ -1,9 +1,11 @@
-import evdev
+"""Read input decices and pass on data."""
 import asyncio
-import mouse
 from threading import Timer, Lock
+import evdev
+import mouse
 
-mouse_movement = [0, 0]
+#pylint: disable=invalid-name,unused-argument,no-member
+mouse_movement = [0, 0, 0]
 mouse_lock = Lock()
 
 class Periodic(object):
@@ -23,6 +25,7 @@ class Periodic(object):
             self.start()
 
     def start(self, from_run=False):
+        """Start timer, reschedule."""
         self._lock.acquire()
         if from_run or self._stopped:
             self._stopped = False
@@ -35,6 +38,7 @@ class Periodic(object):
         self.function(*self.args, **self.kwargs)
 
     def stop(self):
+        """Stop rescheduling."""
         self._lock.acquire()
         self._stopped = True
         self._timer.cancel()
@@ -44,13 +48,16 @@ def move_mouse(*args, **kwargs):
     """Pass on aggregated mouse movements."""
     mouse_lock.acquire()
     if any([value != 0 for value in mouse_movement]):
-        mouse.move(mouse_movement[0], mouse_movement[1])
+        print("move mouse")
+        mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
         # todo: check return value
         mouse_movement[0] = 0
         mouse_movement[1] = 0
+        mouse_movement[2] = 0
     mouse_lock.release()
 
-async def print_events(device):
+async def dispatch_events(device):
+    """Send events on to the correct location."""
     async for event in device.async_read_loop():
         print(device.fn, evdev.categorize(event), sep=': ')
         if event.type == evdev.ecodes.EV_REL:
@@ -58,21 +65,30 @@ async def print_events(device):
             mouse_movement[event.code] += event.value
             mouse_lock.release()
 
+def match_dev(name):
+    """Check device name for suitable input devices."""
+    matches = [
+        "Keyboard",
+        "keyboard",
+        "HID",
+        "Mouse",
+        "mouse",
+        "Logitech"]  # unity wireless mouse
+    for item in matches:
+        if item in name:
+            return True
+    return False
+
 if __name__ == "__main__":
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     devices = []
-    for device in all_devices:
-        print(device)
-        if "Keyboard" in device.name or \
-                "keyboard" in device.name or \
-                "HID" in device.name or \
-                "Mouse" in device.name or \
-                "mouse" in device.name or \
-                "Logitech" in device.name:
-            devices.append(device)
-            device.grab()
+    for dev in all_devices:
+        print(dev)
+        if match_dev(dev.name):
+            devices.append(dev)
+            dev.grab()
             print("grab")
-            asyncio.ensure_future(print_events(device))
+            asyncio.ensure_future(dispatch_events(dev))
     mouse_mover = Periodic(0.1, move_mouse)
     mouse_mover.start()
     loop = asyncio.get_event_loop()
@@ -80,5 +96,5 @@ if __name__ == "__main__":
         loop.run_forever()
     finally:
         mouse_mover.stop()
-        for device in devices:
-            device.ungrab()
+        for dev in devices:
+            dev.ungrab()
