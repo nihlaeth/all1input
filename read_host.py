@@ -21,21 +21,20 @@ class Periodic(Thread):
         self.args = args
         self.kwargs = kwargs
         self._stopped = True
-        if kwargs.pop('autostart', True):
-            self.start()
+        if kwargs.pop('autostart_timer', True):
+            self.start_timer()
 
-    def start(self, from_run=False):
+    def start_timer(self, from_run=False):
         """Start timer, reschedule."""
-        Thread.start(self)
         self._lock.acquire()
         if from_run or self._stopped:
             self._stopped = False
             self._timer = Timer(self.interval, self._run)
-            self._timer.start()
+            self._timer.start_timer()
             self._lock.release()
 
     def _run(self):
-        self.start(from_run=True)
+        self.start_timer(from_run=True)
         self.function(*self.args, **self.kwargs)
 
     def stop(self):
@@ -93,6 +92,7 @@ if __name__ == "__main__":
             asyncio.ensure_future(dispatch_events(dev))
     mouse_mover = Periodic(0.1, move_mouse)
     mouse_mover.start()
+    mouse_mover.start_timer()
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
