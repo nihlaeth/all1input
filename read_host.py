@@ -6,7 +6,7 @@ async def print_events(device):
     async for event in device.async_read_loop():
         print(device.fn, evdev.categorize(event), sep=': ')
         if event.type == evdev.ecodes.EV_REL:
-            print(mouse.move_mouse(event.code[-1:], event.value))
+            print(mouse.move_mouse(event.code, event.value))
 
 if __name__ == "__main__":
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
