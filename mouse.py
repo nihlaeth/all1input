@@ -23,7 +23,7 @@ def move(delta_x, delta_y, delta_wheel):
             pyautogui.moveTo(size_x - 1, fut_y, 0)
             return "exit right"
         elif fut_y < 0:
-            pyautogui.moveToo(fut_x, 0, 0)
+            pyautogui.moveTo(fut_x, 0, 0)
             return "exit up"
         else:
             pyautogui.moveTo(fut_x, size_y - 1, 0)
