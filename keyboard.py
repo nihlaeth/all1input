@@ -11,8 +11,11 @@ def key(event):
     """Press, hold or release a key."""
     if event.code == k.BTN_LEFT:
         if event.value == 0:
-            print("left mouse butten up")
             pyautogui.mouseUp()
         else:
-            print("left mouse butten down")
             pyautogui.mouseDown()
+    elif event.code == k.BTN_RIGHT:
+        if event.value == 0:
+            pyautogui.mouseUp(button="right")
+        else:
+            pyautogui.mouseDown(button="right")
