@@ -10,8 +10,9 @@ pyautogui.FAILSAFE = False
 def key(event):
     """Press, hold or release a key."""
     if event.code == k.BTN_LEFT:
-        print("left mouse button")
         if event.value == 0:
+            print("left mouse butten up")
             pyautogui.mouseUp()
         else:
+            print("left mouse butten down")
             pyautogui.mouseDown()
