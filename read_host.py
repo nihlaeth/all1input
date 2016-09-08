@@ -66,6 +66,8 @@ async def dispatch_events(device):
 
             if name != "" and action != "":
                 keyboard.key(name, action)
+            else:
+                print(device.fn, evdev.categorize(event), sep=': ')
         else:
             print(device.fn, evdev.categorize(event), sep=': ')
 
