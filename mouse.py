@@ -13,7 +13,7 @@ def move(delta_x, delta_y, delta_wheel):
     pos_x, pos_y = pyautogui.position()
     fut_x = pos_x + delta_x * 2
     fut_y = pos_y + delta_y * 2
-    fut_wheel = delta_wheel * 25
+    fut_wheel = delta_wheel * 10
     if fut_wheel != 0:
         pyautogui.scroll(fut_wheel)
 
