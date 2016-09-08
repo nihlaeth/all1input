@@ -18,7 +18,6 @@ class MoveMouse(Thread):
         while True:
             mouse_lock.acquire()
             if any([value != 0 for value in mouse_movement]):
-                print("move mouse")
                 mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
                 # todo: check return value
                 mouse_movement[0] = 0
@@ -43,6 +42,7 @@ async def dispatch_events(device):
         elif event.type == evdev.ecodes.EV_SYN:
             pass
         elif event.type == evdev.ecodes.EV_KEY:
+            print(device.fn, evdev.categorize(event), sep=': ')
             keyboard.key(event)
         else:
             print(device.fn, evdev.categorize(event), sep=': ')
