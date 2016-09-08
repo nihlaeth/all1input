@@ -3,6 +3,7 @@ from time import sleep
 import asyncio
 from threading import Lock, Thread
 import evdev
+import evdev.ecodes as k
 import mouse
 import keyboard
 
@@ -28,6 +29,7 @@ class MoveMouse(Thread):
 
 async def dispatch_events(device):
     """Send events on to the correct location."""
+    #pylint: disable=too-many-branches
     async for event in device.async_read_loop():
         if event.type == evdev.ecodes.EV_REL:
             mouse_lock.acquire()
@@ -42,8 +44,28 @@ async def dispatch_events(device):
         elif event.type == evdev.ecodes.EV_SYN:
             pass
         elif event.type == evdev.ecodes.EV_KEY:
-            print(device.fn, evdev.categorize(event), sep=': ')
-            keyboard.key(event)
+            name = ""
+            if event.code == k.BTN_LEFT:
+                name = "mouseleft"
+            elif event.code == k.BTN_RIGHT:
+                name = "mouseright"
+            elif event.code == k.BTN_MIDDLE:
+                name = "return"
+            elif event.code == k.BTN_EXTRA:
+                name = "up"
+            elif event.code == k.BTN_SIDE:
+                name = "down"
+
+            action = ""
+            if event.value == 0:
+                action = "release"
+            elif event.value == 1:
+                action = "press"
+            elif event.value == 2:
+                action = "hold"
+
+            if name != "" and action != "":
+                keyboard.key(name, action)
         else:
             print(device.fn, evdev.categorize(event), sep=': ')
 

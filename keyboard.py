@@ -1,7 +1,6 @@
 """Keyboard control."""
 #pylint: disable=invalid-name,unused-argument,import-error,no-member
 import pyautogui
-import evdev.ecodes as k
 pyautogui.PAUSE = 0.0
 pyautogui.MINIMUM_DURATION = 0.01
 pyautogui.MINIMUM_SLEEP = 0.05
@@ -65,22 +64,11 @@ keyboard["mouseleft"] = MouseKey("left")
 keyboard["mouseright"] = MouseKey("right")
 keyboard["mousemiddle"] = MouseKey("middle")
 
-def key(event):
+def key(name, action):
     """Press, hold or release a key."""
-    if event.code == k.BTN_LEFT:
-        name = "mouseleft"
-    elif event.code == k.BTN_RIGHT:
-        name = "mouseright"
-    elif event.code == k.BTN_MIDDLE:
-        name = "returna"
-    elif event.code == k.BTN_EXTRA:
-        name = "up"
-    elif event.code == k.BTN_SIDE:
-        name = "down"
-
-    if event.value == 0:
+    if action == "release":
         keyboard[name].release()
-    elif event.value == 1:
+    elif action == "press":
         keyboard[name].press()
-    else:
+    elif action == "hold":
         keyboard[name].hold()
