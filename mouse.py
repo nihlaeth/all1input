@@ -13,8 +13,9 @@ def move(delta_x, delta_y, delta_wheel):
     pos_x, pos_y = pyautogui.position()
     fut_x = pos_x + delta_x * 2
     fut_y = pos_y + delta_y * 2
-    if delta_wheel != 0:
-        pyautogui.scroll(delta_wheel)
+    fut_wheel = delta_wheel * 25
+    if fut_wheel != 0:
+        pyautogui.scroll(fut_wheel)
 
     if pyautogui.onScreen(fut_x, fut_y):
         pyautogui.moveTo(fut_x, fut_y, 0.01)
