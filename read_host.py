@@ -11,12 +11,14 @@ import keyboard
 mouse_movement = [0, 0, 0]
 mouse_lock = Lock()
 
+STOP = False
+
 class MoveMouse(Thread):
 
     """Pass on aggregated mouse movements."""
 
     def run(self):
-        while True:
+        while not STOP:
             mouse_lock.acquire()
             if any([value != 0 for value in mouse_movement]):
                 mouse.move(mouse_movement[0], mouse_movement[1], mouse_movement[2])
@@ -101,6 +103,10 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
+    except KeyboardInterrupt:
+        STOP = True
     finally:
+        loop.close()
         for dev in devices:
             dev.ungrab()
+        mouse_mover.join()
