@@ -2,6 +2,7 @@
 import asyncio
 from time import sleep
 
+from config import CONFIG as c
 import mouse
 import keyboard
 
@@ -9,15 +10,14 @@ class All1InputClientProtocol(asyncio.Protocol):
 
     """All1input client."""
 
-    def __init__(self, client_name, loop):
-        self.client_name = client_name
+    def __init__(self, loop):
         self.loop = loop
         self.transport = None
 
     def connection_made(self, transport):
         self.transport = transport
-        transport.write("client {}".format(self.client_name).encode())
-        print('Data sent: {!r}'.format(self.client_name))
+        transport.write("client {}".format(c.name).encode())
+        print('Data sent: {!r}'.format(c.name))
 
     def data_received(self, data):
         print('Data received: {!r}'.format(data.decode()))
@@ -66,9 +66,9 @@ if __name__ == "__main__":
         while True:
             loop = asyncio.get_event_loop()
             coro = loop.create_connection(
-                lambda: All1InputClientProtocol("localhost", loop),
-                '127.0.0.1',
-                8888)
+                lambda: All1InputClientProtocol(loop),
+                c.ip,
+                c.port)
             loop.run_until_complete(coro)
             loop.run_forever()
             loop.close()

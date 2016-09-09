@@ -3,6 +3,8 @@ import asyncio
 from functools import partial
 import evdev
 import evdev.ecodes as k
+
+from config import CONFIG as c
 from client import All1InputClientProtocol
 
 #pylint: disable=invalid-name,unused-argument,no-member
@@ -145,12 +147,12 @@ if __name__ == "__main__":
             asyncio.ensure_future(dispatch_events(dev))
     loop = asyncio.get_event_loop()
     coro_server = loop.create_server(
-        All1InputServerClientProtocol, '127.0.0.1', 6912)
+        All1InputServerClientProtocol, c.ip, c.port)
     server = loop.run_until_complete(coro_server)
     coro_client = loop.create_connection(
-        partial(All1InputClientProtocol, "localhost", loop),
-        "127.0.0.1",
-        6912)
+        partial(All1InputClientProtocol, loop),
+        c.ip,
+        c.port)
     loop.run_until_complete(coro_client)
     loop.call_later(0.01, move_mouse)
     try:

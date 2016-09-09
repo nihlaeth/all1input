@@ -25,15 +25,17 @@ class Config():
             "port": "6913",
             "wrap": False,
             "name": "localhost",
-            "mouse_acceleration": "20",
+            "mouse_acceleration": "2",
             "scroll_acceleration": "10"}
         booleans = ("wrap")
         if name in booleans:
             return self._config.getboolean(section, name, fallback=fallback[name])
         else:
             value = self._config.get(section, name, fallback=fallback[name])
-            integers = ("mouse_acceleration", "scroll_acceleration")
+            integers = ("port", "mouse_acceleration", "scroll_acceleration")
             if name in integers:
                 return int(value)
             else:
                 return value
+
+CONFIG = Config()
