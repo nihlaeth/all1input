@@ -36,7 +36,10 @@ class All1InputClientProtocol(asyncio.Protocol):
         elif msg.startswith("keyHold "):
             keyboard.key(msg.split(" ")[1], "hold")
         elif msg.startswith("mouse "):
-            _, delta_x, delta_y, delta_wheel = [int(x) for x in msg.split(" ")]
+            parts = msg.split(" ")
+            delta_x = int(parts[1])
+            delta_y = int(parts[2])
+            delta_wheel = int(parts[3])
             result = mouse.move(delta_x, delta_y, delta_wheel)
             if result == "ok":
                 pass
