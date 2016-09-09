@@ -15,8 +15,8 @@ current = None
 
 def switch_client(command):
     """Change active client."""
+    global current
     if current is None:
-        global current
         current = [client for client in clients][0]
     else:
         loop.call_soon(partial(clients[current].send, "exit"))
@@ -142,12 +142,12 @@ if __name__ == "__main__":
             asyncio.ensure_future(dispatch_events(dev))
     loop = asyncio.get_event_loop()
     coro_server = loop.create_server(
-        All1InputServerClientProtocol, '127.0.0.1', 8888)
+        All1InputServerClientProtocol, '127.0.0.1', 6912)
     server = loop.run_until_complete(coro_server)
     coro_client = loop.create_connection(
         partial(All1InputClientProtocol, "localhost", loop),
         "127.0.0.1",
-        8888)
+        6912)
     loop.run_until_complete(coro_client)
     loop.call_later(0.01, move_mouse)
     try:
