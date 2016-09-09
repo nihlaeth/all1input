@@ -33,6 +33,7 @@ class All1InputServerClientProtocol(asyncio.Protocol):
     """Represent connected client."""
 
     def connection_made(self, transport):
+        self.name = None
         peername = transport.get_extra_info('peername')
         print('Connection from {}'.format(peername))
         self.transport = transport
@@ -43,9 +44,13 @@ class All1InputServerClientProtocol(asyncio.Protocol):
 
         if message.startswith("client "):
             name = message[7:]
-            clients[name] = self
+            if name not in clients:
+                self.name = name
+                clients[name] = self
+            else:
+                print("client {} already exists".format(name))
             if current is None:
-                switch_client("exit left 50")
+                switch_client("exit left 0.5")
         elif message.startswith("exit "):
             switch_client(message)
         else:
@@ -58,7 +63,13 @@ class All1InputServerClientProtocol(asyncio.Protocol):
 
 
     def connection_lost(self, exc):
+        global current
         print('Close the client socket')
+        if self.name is not None:
+            del clients[self.name]
+            if current == self.name:
+                current = None
+                switch_client("exit left 0.5")
         self.transport.close()
 
 def move_mouse():
