@@ -11,13 +11,13 @@ size_x, size_y = pyautogui.size()
 def enter(exit_direction, percentage):
     """Enter screen in logical place."""
     if exit_direction == "up":
-        pyautogui.moveTo((size_x - 1) / percentage, size_y - 1, 0)
+        pyautogui.moveTo(int((size_x - 1) * percentage), size_y - 1, 0)
     elif exit_direction == "down":
-        pyautogui.moveTo((size_x - 1) / percentage, 0, 0)
+        pyautogui.moveTo(int((size_x - 1) * percentage), 0, 0)
     elif exit_direction == "left":
-        pyautogui.moveTo(size_x - 1, (size_y - 1) / percentage, 0)
+        pyautogui.moveTo(size_x - 1, int((size_y - 1) * percentage), 0)
     elif exit_direction == "right":
-        pyautogui.moveTo(0, (size_y - 1) / percentage, 0)
+        pyautogui.moveTo(0, int((size_y - 1) * percentage), 0)
     else:
         print("unknown exit direction {}".format(exit_direction))
 

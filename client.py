@@ -24,7 +24,7 @@ class All1InputClientProtocol(asyncio.Protocol):
         msg = data.decode()
         if msg.startswith("enter "):
             direction = msg.split(" ")[1]
-            percentage = int(msg.split(" ")[2])
+            percentage = float(msg.split(" ")[2])
             mouse.enter(direction, percentage)
         elif msg.startswith("exit"):
             for key in keyboard.keyboard:

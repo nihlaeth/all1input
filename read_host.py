@@ -21,7 +21,10 @@ def switch_client(command):
     else:
         loop.call_soon(partial(clients[current].send, "exit"))
     # todo: select different client
-    loop.call_soon(partial(clients[current].send, command))
+    parts = command.split(" ")
+    loop.call_soon(partial(
+        clients[current].send,
+        "enter {} {}".format(parts[1], parts[2])))
 
 class All1InputServerClientProtocol(asyncio.Protocol):
 
