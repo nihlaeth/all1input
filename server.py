@@ -15,15 +15,77 @@ STOP = False
 clients = {}
 current = None
 
+def move_in_matrix(direction):
+    """Traverse matrix to find which client to move to."""
+    matrix = c.layout
+    dim_x = len(matrix[0])
+    dim_y = len(matrix)
+
+    # find current in matrix
+    curr_x = None
+    curr_y = None
+    for y in range(dim_y):
+        for x in range(dim_x):
+            if matrix[y][x] == current:
+                curr_x = x
+                curr_y = y
+                break
+    if curr_x is None:
+        print("{} not in layout".format(current))
+        return
+
+    # traverse matrix
+    if direction == "left":
+        axis = "x"
+        dir_ = -1
+    elif direction == "right":
+        axis = "x"
+        dir_ = 1
+    elif direction == "up":
+        axis = "y"
+        dir_ = -1
+    elif direction == "down":
+        axis = "y"
+        dir_ = 1
+
+    while True:
+        if axis == "x":
+            curr_x += dir_
+        elif axis == "y":
+            curr_y += dir_
+        if curr_x < 0 or curr_x >= dim_x:
+            if c.wrap:
+                if curr_x < 0:
+                    curr_x = dim_x - 1
+                else:
+                    curr_x = 0
+            else:
+                return None
+        if curr_y < 0 or curr_y >= dim_y:
+            if c.wrap:
+                if curr_y < 0:
+                    curr_y = dim_y - 1
+                else:
+                    curr_y = 0
+            else:
+                return None
+        candidate = matrix[curr_y][curr_x]
+        if candidate is not None and candidate in clients:
+            return candidate
+
 def switch_client(command):
     """Change active client."""
     global current
+    parts = command.split(" ")
     if current is None:
+        # pick first client you can find
         current = [client for client in clients][0]
     else:
+        new = move_in_matrix(parts[1])
+        if new is None:
+            return
         loop.call_soon(partial(clients[current].send, "exit "))
-    # todo: select different client
-    parts = command.split(" ")
+        current = new
     loop.call_soon(partial(
         clients[current].send,
         "enter {} {} ".format(parts[1], parts[2])))
