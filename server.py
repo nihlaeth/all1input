@@ -82,6 +82,7 @@ def switch_client(command):
         current = [client for client in clients][0]
     else:
         new = move_in_matrix(parts[1])
+        print("new client is {}".format(new))
         if new is None:
             return
         loop.call_soon(partial(clients[current].send, "exit "))
