@@ -1,31 +1,27 @@
 """Read input decices and pass on data."""
-from time import sleep
 import asyncio
-from threading import Lock, Thread
+from functools import partial
 import evdev
 import evdev.ecodes as k
 from client import All1InputClientProtocol
 
 #pylint: disable=invalid-name,unused-argument,no-member
 mouse_movement = [0, 0, 0]
-mouse_lock = Lock()
-keyboard_lock = Lock()
 
 STOP = False
-SERVER_RUNNING = False
 
 clients = {}
 current = None
 
 def switch_client(command):
     """Change active client."""
-    mouse_lock.acquire()
-    keyboard_lock.acquire()
-    server.loop.call_soon_threadsafe(clients[current].send, "exit")
+    if current is None:
+        global current
+        current = [client for client in clients][0]
+    else:
+        loop.call_soon(partial(clients[current].send, "exit"))
     # todo: select different client
-    server.loop.call_soon_threadsafe(clients[current].send, command)
-    keyboard_lock.release()
-    mouse_lock.release()
+    loop.call_soon(partial(clients[current].send, command))
 
 class All1InputServerClientProtocol(asyncio.Protocol):
 
@@ -43,9 +39,8 @@ class All1InputServerClientProtocol(asyncio.Protocol):
         if message.startswith("client "):
             name = message[7:]
             clients[name] = self
-            if current is not None:
-                global current
-                current = name
+            if current is None:
+                switch_client("exit left 50")
         elif message.startswith("exit "):
             switch_client(message)
         else:
@@ -61,83 +56,26 @@ class All1InputServerClientProtocol(asyncio.Protocol):
         print('Close the client socket')
         self.transport.close()
 
-class Server(Thread):
-
-    """Start server."""
-
-    def run(self):
-        self.loop = asyncio.get_event_loop()
-        # Each client connection will create a new protocol instance
-        coro = self.loop.create_server(
-            All1InputServerClientProtocol, '127.0.0.1', 8888)
-        self.server = self.loop.run_until_complete(coro)
-        global SERVER_RUNNING
-        SERVER_RUNNING = True
-
-        # Serve requests until Ctrl+C is pressed
-        print('Serving on {}'.format(self.server.sockets[0].getsockname()))
-        try:
-            self.loop.run_forever()
-        except KeyboardInterrupt:
-            global STOP
-            STOP = True
-        finally:
-            # Close the server
-            self.server.close()
-            self.loop.run_until_complete(server.wait_closed())
-            self.loop.close()
-
-class Client(Thread):
-
-    """Start client."""
-
-    def run(self):
-        while not SERVER_RUNNING:
-            sleep(0.1)
-        try:
-            while not STOP:
-                self.loop = asyncio.get_event_loop()
-                coro = self.loop.create_connection(
-                    lambda: All1InputClientProtocol("localhost", self.loop),
-                    "127.0.0.1",
-                    8888)
-                self.loop.run_until_complete(coro)
-                self.loop.run_forever()
-                self.loop.close()
-                sleep(5)
-        except KeyboardInterrupt:
-            global STOP
-            STOP = True
-        finally:
-            self.loop.close()
-
-
-class MoveMouse(Thread):
-
+def move_mouse():
     """Pass on aggregated mouse movements."""
-
-    def run(self):
-        while not STOP:
-            mouse_lock.acquire()
-            if any([value != 0 for value in mouse_movement]):
-                server.loop.call_soon_threadsafe(
-                    clients[current].send,
-                    "mouse {} {} {}".format(
-                        mouse_movement[0],
-                        mouse_movement[1],
-                        mouse_movement[2]))
-                mouse_movement[0] = 0
-                mouse_movement[1] = 0
-                mouse_movement[2] = 0
-            mouse_lock.release()
-            sleep(0.01)
+    if any([value != 0 for value in mouse_movement]):
+        loop.call_soon(partial(
+            clients[current].send,
+            "mouse {} {} {}".format(
+                mouse_movement[0],
+                mouse_movement[1],
+                mouse_movement[2])))
+        mouse_movement[0] = 0
+        mouse_movement[1] = 0
+        mouse_movement[2] = 0
+    if not STOP:
+        loop.call_later(0.01, move_mouse)
 
 async def dispatch_events(device):
     """Send events on to the correct location."""
     #pylint: disable=too-many-branches
     async for event in device.async_read_loop():
         if event.type == evdev.ecodes.EV_REL:
-            mouse_lock.acquire()
             if event.code == 0:
                 mouse_movement[0] += event.value
             elif event.code == 1:
@@ -145,7 +83,6 @@ async def dispatch_events(device):
             elif event.code == 8:  # scroll wheel
                 mouse_movement[2] += event.value
 
-            mouse_lock.release()
         elif event.type == evdev.ecodes.EV_SYN:
             pass
         elif event.type == evdev.ecodes.EV_KEY:
@@ -203,21 +140,23 @@ if __name__ == "__main__":
             dev.grab()
             print("grab")
             asyncio.ensure_future(dispatch_events(dev))
-    mouse_mover = MoveMouse()
-    mouse_mover.start()
-    server = Server()
-    server.start()
-    client = Client()
-    client.start()
     loop = asyncio.get_event_loop()
+    coro_server = loop.create_server(
+        All1InputServerClientProtocol, '127.0.0.1', 8888)
+    server = loop.run_until_complete(coro_server)
+    coro_client = loop.create_connection(
+        partial(All1InputClientProtocol, "localhost", loop),
+        "127.0.0.1",
+        8888)
+    loop.run_until_complete(coro_client)
+    loop.call_later(0.01, move_mouse)
     try:
         loop.run_forever()
     except KeyboardInterrupt:
         STOP = True
     finally:
+        server.close()
+        loop.run_until_complete(server.wait_closed())
         loop.close()
         for dev in devices:
             dev.ungrab()
-        mouse_mover.join()
-        client.join()
-        server.join()
