@@ -19,12 +19,12 @@ def switch_client(command):
     if current is None:
         current = [client for client in clients][0]
     else:
-        loop.call_soon(partial(clients[current].send, "exit"))
+        loop.call_soon(partial(clients[current].send, "exit "))
     # todo: select different client
     parts = command.split(" ")
     loop.call_soon(partial(
         clients[current].send,
-        "enter {} {}".format(parts[1], parts[2])))
+        "enter {} {} ".format(parts[1], parts[2])))
 
 class All1InputServerClientProtocol(asyncio.Protocol):
 
@@ -64,7 +64,7 @@ def move_mouse():
     if any([value != 0 for value in mouse_movement]):
         loop.call_soon(partial(
             clients[current].send,
-            "mouse {} {} {}".format(
+            "mouse {} {} {} ".format(
                 mouse_movement[0],
                 mouse_movement[1],
                 mouse_movement[2])))
@@ -112,7 +112,7 @@ async def dispatch_events(device):
             if name != "" and action != "":
                 loop.call_soon(partial(
                     clients[current].send,
-                    "{} {}".format(action, name)))
+                    "{} {} ".format(action, name)))
             else:
                 print(device.fn, evdev.categorize(event), sep=': ')
         else:
