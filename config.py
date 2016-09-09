@@ -13,6 +13,8 @@ class Config():
         host = ("ip", "port", "wrap")
         client = ("name", "mouse_acceleration", "scroll_acceleration")
         section = ""
+        if name == "layout":
+            return self._get_layout()
         if name in host:
             section = "host"
         elif name in client:
@@ -37,5 +39,34 @@ class Config():
                 return int(value)
             else:
                 return value
+
+    def _get_layout(self):
+        hosts = self._config["layout"]
+        max_x = 0
+        max_y = 0
+        for host in hosts:
+            x, y = self._config["layout"][host].split(",")
+            x = int(x)
+            y = int(y)
+            if x > max_x:
+                max_x = x
+            if y > max_y:
+                max_y = y
+
+        # construct matrix
+        matrix = []
+        for y in range(max_y):
+            matrix.append([])
+            for x in range(max_x):
+                matrix[y].append(None)
+
+        # fill matrix
+        for host in hosts:
+            x, y = self._config["layout"][host].split(",")
+            x = int(x) - 1
+            y = int(y) - 1
+            matrix[y][x] = host
+
+        return matrix
 
 CONFIG = Config()
