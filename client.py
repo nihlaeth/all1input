@@ -17,10 +17,8 @@ class All1InputClientProtocol(asyncio.Protocol):
     def connection_made(self, transport):
         self.transport = transport
         transport.write("client {}".format(c.name).encode())
-        print('Data sent: {!r}'.format(c.name))
 
     def data_received(self, data):
-        print('Data received: {!r}'.format(data.decode()))
         tokens = data.decode().split(" ")
         while len(tokens) > 0:
             cmd = tokens.pop(0)
@@ -62,16 +60,19 @@ class All1InputClientProtocol(asyncio.Protocol):
         self.loop.stop()
 
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
     try:
         while True:
-            loop = asyncio.get_event_loop()
-            coro = loop.create_connection(
-                lambda: All1InputClientProtocol(loop),
-                c.ip,
-                c.port)
-            loop.run_until_complete(coro)
-            loop.run_forever()
-            loop.close()
+            try:
+                coro = loop.create_connection(
+                    lambda: All1InputClientProtocol(loop),
+                    c.ip,
+                    c.port)
+                loop.run_until_complete(coro)
+                loop.run_forever()
+                loop.close()
+            except ConnectionRefusedError:
+                pass
             sleep(5)
     except KeyboardInterrupt:
         pass
