@@ -107,9 +107,9 @@ async def dispatch_events(device):
                 action = "keyHold"
 
             if name != "" and action != "":
-                server.loop.call_soon_threadsafe(
+                loop.call_soon(partial(
                     clients[current].send,
-                    "{} {}".format(action, name))
+                    "{} {}".format(action, name)))
             else:
                 print(device.fn, evdev.categorize(event), sep=': ')
         else:
