@@ -21,34 +21,40 @@ class All1InputClientProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         print('Data received: {!r}'.format(data.decode()))
-        msg = data.decode()
-        if msg.startswith("enter "):
-            direction = msg.split(" ")[1]
-            percentage = float(msg.split(" ")[2])
-            mouse.enter(direction, percentage)
-        elif msg.startswith("exit"):
-            for key in keyboard.keyboard:
-                keyboard.keyboard[key].exit()
-        elif msg.startswith("keyUp "):
-            keyboard.key(msg.split(" ")[1], "release")
-        elif msg.startswith("keyDown "):
-            keyboard.key(msg.split(" ")[1], "press")
-        elif msg.startswith("keyHold "):
-            keyboard.key(msg.split(" ")[1], "hold")
-        elif msg.startswith("mouse "):
-            parts = msg.split(" ")
-            delta_x = int(parts[1])
-            delta_y = int(parts[2])
-            delta_wheel = int(parts[3])
-            result = mouse.move(delta_x, delta_y, delta_wheel)
-            if result == "ok":
-                pass
-            elif result.startswith("exit "):
-                self.transport.write(result.encode())
+        tokens = data.decode().split(" ")
+        while len(tokens) > 0:
+            cmd = tokens.pop(0)
+            if cmd == "":
+                continue
+            elif cmd == "enter":
+                direction = tokens.pop(0)
+                percentage = float(tokens.pop(0))
+                mouse.enter(direction, percentage)
+            elif cmd == "exit":
+                for key in keyboard.keyboard:
+                    keyboard.keyboard[key].exit()
+            elif cmd == "keyUp":
+                name = tokens.pop(0)
+                keyboard.key(name, "release")
+            elif cmd == "keyDown":
+                name = tokens.pop(0)
+                keyboard.key(name, "press")
+            elif cmd == "keyHold":
+                name = tokens.pop(0)
+                keyboard.key(name, "hold")
+            elif cmd == "mouse":
+                delta_x = int(tokens.pop(0))
+                delta_y = int(tokens.pop(0))
+                delta_wheel = int(tokens.pop(0))
+                result = mouse.move(delta_x, delta_y, delta_wheel)
+                if result == "ok":
+                    pass
+                elif result.startswith("exit "):
+                    self.transport.write(result.encode())
+                else:
+                    print(result)
             else:
-                print(result)
-        else:
-            print("unknown command {}".format(msg))
+                print("unknown command {}".format(data.decode()))
 
     def connection_lost(self, exc):
         self.transport = None
