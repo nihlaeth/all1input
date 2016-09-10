@@ -196,9 +196,6 @@ async def dispatch_events(file_name, device):
                 print(device.fn, evdev.categorize(event), sep=': ')
     except OSError:
         # most likely device disconnected
-        pass
-    finally:
-        device.close()
         del devices[file_name]
 
 def match_dev(name):
