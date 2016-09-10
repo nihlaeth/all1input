@@ -150,50 +150,57 @@ def move_mouse():
     if not STOP:
         loop.call_later(0.01, move_mouse)
 
-async def dispatch_events(device):
+async def dispatch_events(file_name, device):
     """Send events on to the correct location."""
     #pylint: disable=too-many-branches
-    async for event in device.async_read_loop():
-        if event.type == evdev.ecodes.EV_REL:
-            if event.code == 0:
-                mouse_movement[0] += event.value
-            elif event.code == 1:
-                mouse_movement[1] += event.value
-            elif event.code == 8:  # scroll wheel
-                mouse_movement[2] += event.value
+    try:
+        async for event in device.async_read_loop():
+            if event.type == evdev.ecodes.EV_REL:
+                if event.code == 0:
+                    mouse_movement[0] += event.value
+                elif event.code == 1:
+                    mouse_movement[1] += event.value
+                elif event.code == 8:  # scroll wheel
+                    mouse_movement[2] += event.value
 
-        elif event.type == evdev.ecodes.EV_SYN:
-            pass
-        elif event.type == evdev.ecodes.EV_KEY:
-            name = ""
-            if event.code == k.BTN_LEFT:
-                name = "mouseleft"
-            elif event.code == k.BTN_RIGHT:
-                name = "mouseright"
-            elif event.code == k.BTN_MIDDLE:
-                name = "return"
-            elif event.code == k.BTN_EXTRA:
-                name = "up"
-            elif event.code == k.BTN_SIDE:
-                name = "down"
+            elif event.type == evdev.ecodes.EV_SYN:
+                pass
+            elif event.type == evdev.ecodes.EV_KEY:
+                name = ""
+                if event.code == k.BTN_LEFT:
+                    name = "mouseleft"
+                elif event.code == k.BTN_RIGHT:
+                    name = "mouseright"
+                elif event.code == k.BTN_MIDDLE:
+                    name = "return"
+                elif event.code == k.BTN_EXTRA:
+                    name = "up"
+                elif event.code == k.BTN_SIDE:
+                    name = "down"
 
-            action = ""
-            if event.value == 0:
-                action = "keyUp"
-            elif event.value == 1:
-                action = "keyDown"
-            elif event.value == 2:
-                action = "keyHold"
+                action = ""
+                if event.value == 0:
+                    action = "keyUp"
+                elif event.value == 1:
+                    action = "keyDown"
+                elif event.value == 2:
+                    action = "keyHold"
 
-            if name != "" and action != "":
-                loop.call_soon(partial(
-                    clients[current].send,
-                    "{} {} ".format(action, name)))
+                if name != "" and action != "":
+                    loop.call_soon(partial(
+                        clients[current].send,
+                        "{} {} ".format(action, name)))
+                else:
+                    print(device.fn, evdev.categorize(event), sep=': ')
             else:
                 print(device.fn, evdev.categorize(event), sep=': ')
-        else:
-            print(device.fn, evdev.categorize(event), sep=': ')
-
+    except OSError:
+        # most likely device disconnected
+        pass
+    finally:
+        device.ungrab()
+        device.close()
+        del devices[file_name]
 
 def match_dev(name):
     """Check device name for suitable input devices."""
@@ -209,16 +216,22 @@ def match_dev(name):
             return True
     return False
 
+def update_devices():
+    for file_name in evdev.list_devices():
+        if file_name not in devices:
+            dev = evdev.InputDevice(file_name)
+            print(dev)
+            if match_dev(dev.name):
+                devices[file_name] = dev
+                dev.grab()
+                print("grab")
+                asyncio.ensure_future(dispatch_events(file_name, dev))
+    if not STOP:
+        loop.call_later(3, update_devices)
+
 if __name__ == "__main__":
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
-    devices = []
-    for dev in all_devices:
-        print(dev)
-        if match_dev(dev.name):
-            devices.append(dev)
-            dev.grab()
-            print("grab")
-            asyncio.ensure_future(dispatch_events(dev))
+    devices = {}
     loop = asyncio.get_event_loop()
     coro_server = loop.create_server(
         All1InputServerClientProtocol, c.ip, c.port)
@@ -228,14 +241,16 @@ if __name__ == "__main__":
         c.ip,
         c.port)
     loop.run_until_complete(coro_client)
+    loop.call_later(1, update_devices)
     loop.call_later(0.01, move_mouse)
     try:
         loop.run_forever()
     except KeyboardInterrupt:
         STOP = True
     finally:
+        for dev in devices:
+            devices[dev].ungrab()
+            devices[dev].close()
         server.close()
         loop.run_until_complete(server.wait_closed())
         loop.close()
-        for dev in devices:
-            dev.ungrab()
