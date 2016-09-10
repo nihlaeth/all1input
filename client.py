@@ -1,4 +1,5 @@
 """All1input client."""
+from functools import partial
 import asyncio
 from time import sleep
 
@@ -65,12 +66,11 @@ if __name__ == "__main__":
         while True:
             try:
                 coro = loop.create_connection(
-                    lambda: All1InputClientProtocol(loop),
+                    partial(All1InputClientProtocol, loop),
                     c.ip,
                     c.port)
                 loop.run_until_complete(coro)
                 loop.run_forever()
-                loop.close()
             except ConnectionRefusedError:
                 pass
             sleep(5)
