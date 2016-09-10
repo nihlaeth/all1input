@@ -198,7 +198,6 @@ async def dispatch_events(file_name, device):
         # most likely device disconnected
         pass
     finally:
-        device.ungrab()
         device.close()
         del devices[file_name]
 
@@ -218,7 +217,7 @@ def match_dev(name):
 
 def update_devices():
     for file_name in evdev.list_devices():
-        if file_name not in devices:
+        if file_name not in devices and file_name not in ignore_devices:
             dev = evdev.InputDevice(file_name)
             print(dev)
             if match_dev(dev.name):
@@ -226,12 +225,15 @@ def update_devices():
                 dev.grab()
                 print("grab")
                 asyncio.ensure_future(dispatch_events(file_name, dev))
+            else:
+                ignore_devices.append(file_name)
     if not STOP:
         loop.call_later(3, update_devices)
 
 if __name__ == "__main__":
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     devices = {}
+    ignore_devices = []
     loop = asyncio.get_event_loop()
     coro_server = loop.create_server(
         All1InputServerClientProtocol, c.ip, c.port)
