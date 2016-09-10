@@ -44,6 +44,7 @@ class All1InputClientProtocol(asyncio.Protocol):
                 name = tokens.pop(0)
                 keyboard.key(name, "hold")
             elif cmd == "mouse":
+                print("{}: mouse move".format(c.name))
                 delta_x = int(tokens.pop(0))
                 delta_y = int(tokens.pop(0))
                 delta_wheel = int(tokens.pop(0))
