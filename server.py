@@ -169,11 +169,21 @@ async def dispatch_events(file_name, device):
             elif event.type == evdev.ecodes.EV_KEY:
                 name = ""
                 if event.code in k.KEY:
-                    if k.KEY[event.code] in keytable:
-                        name = keytable[k.KEY[event.code]]
+                    ev_table = k.KEY
                 elif event.code in k.BTN:
-                    if k.BTN[event.code] in keytable:
-                        name = keytable[k.BTN[event.code]]
+                    ev_table = k.KEY
+                else:
+                    print("key not in key or btn")
+                    return
+
+                key_name = ev_table[event.code]
+                if isinstance(key_name, list):
+                    # more than 1 name associated with code
+                    # we just pick the first one...
+                    key_name = key_name[0]
+
+                if key_name in keytable:
+                    name = keytable[key_name]
 
                 action = ""
                 if event.value == 0:
