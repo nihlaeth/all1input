@@ -171,7 +171,7 @@ async def dispatch_events(file_name, device):
                 if event.code in k.KEY:
                     ev_table = k.KEY
                 elif event.code in k.BTN:
-                    ev_table = k.KEY
+                    ev_table = k.BTN
                 else:
                     print("key not in key or btn")
                     return
