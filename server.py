@@ -168,8 +168,12 @@ async def dispatch_events(file_name, device):
                 pass
             elif event.type == evdev.ecodes.EV_KEY:
                 name = ""
-                if k.KEY[event.code] in keytable:
-                    name = keytable[k.KEY[event.code]]
+                if event.code in k.KEY:
+                    if k.KEY[event.code] in keytable:
+                        name = keytable[k.KEY[event.code]]
+                elif event.code in k.BTN:
+                    if k.BTN[event.code] in keytable:
+                        name = keytable[k.BTN[event.code]]
 
                 action = ""
                 if event.value == 0:
