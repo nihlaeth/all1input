@@ -1,6 +1,9 @@
 """Keyboard control."""
 #pylint: disable=invalid-name,unused-argument,import-error,no-member
 import pyautogui
+
+from keytranslation import keytable
+
 pyautogui.PAUSE = 0.0
 pyautogui.MINIMUM_DURATION = 0.01
 pyautogui.MINIMUM_SLEEP = 0.05
@@ -57,12 +60,18 @@ class MouseKey(Key):
             self.state = "idle"
 
 keyboard = {}
-for key_name_ in pyautogui.KEYBOARD_KEYS:
-    keyboard[key_name_] = Key(key_name_)
-# mouse buttons
-keyboard["mouseleft"] = MouseKey("left")
-keyboard["mouseright"] = MouseKey("right")
-keyboard["mousemiddle"] = MouseKey("middle")
+for key_name_ in keytable:
+    tr_name = keytable[key_name_]
+    if tr_name in keyboard:
+        continue
+    if tr_name == "mouseleft":
+        keyboard["mouseleft"] = MouseKey("left")
+    elif tr_name == "mouseright":
+        keyboard["mouseright"] = MouseKey("right")
+    elif tr_name == "mousemiddle":
+        keyboard["mousemiddle"] = MouseKey("middle")
+    else:
+        keyboard[tr_name] = Key(tr_name)
 
 def key(name, action):
     """Press, hold or release a key."""
