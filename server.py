@@ -6,6 +6,7 @@ import evdev.ecodes as k
 
 from config import CONFIG as c
 from client import All1InputClientProtocol
+from keytranslation import keytable
 
 #pylint: disable=invalid-name,unused-argument,no-member
 mouse_movement = [0, 0, 0]
@@ -167,16 +168,8 @@ async def dispatch_events(file_name, device):
                 pass
             elif event.type == evdev.ecodes.EV_KEY:
                 name = ""
-                if event.code == k.BTN_LEFT:
-                    name = "mouseleft"
-                elif event.code == k.BTN_RIGHT:
-                    name = "mouseright"
-                elif event.code == k.BTN_MIDDLE:
-                    name = "return"
-                elif event.code == k.BTN_EXTRA:
-                    name = "up"
-                elif event.code == k.BTN_SIDE:
-                    name = "down"
+                if k.KEY[event.code] in keytable:
+                    name = keytable[k.KEY[event.code]]
 
                 action = ""
                 if event.value == 0:
