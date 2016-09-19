@@ -47,7 +47,7 @@ def on_screen(x, y):
 
 def move_to(x, y):
     """Move cursor to x, y."""
-    _display.root.warp_pointer(x, y)
+    _display.screen().root.warp_pointer(x, y)
     _display.sync()
 
 def scroll(amount, vertical=False):
