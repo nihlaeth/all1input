@@ -40,7 +40,7 @@ def move(delta_x, delta_y, delta_wheel):
             hid.move_to(size_x - 1, fut_y)
             return "exit right {}".format(fut_y / size_y)
         elif fut_y < 0:
-            hid.move_to(fut_x, 0, 0.01)
+            hid.move_to(fut_x, 0)
             return "exit up {}".format(fut_x / size_x)
         else:
             hid.move_to(fut_x, size_y - 1)
