@@ -52,16 +52,16 @@ def move_to(x, y):
     fake_input(_display, X.MotionNotify, x=x, y=y)
     _display.sync()
 
-def scroll(amount, vertical=False):
-    """Horizontal and vertical scrolling."""
-    if vertical and amount < 0:
-        button = 5  # left
-    elif vertical and amount >= 0:
-        button = 4  # right
-    elif not vertical and amount < 0:
-        button = 6  # up
-    elif not vertical and amount >= 0:
-        button = 7  # down
+def scroll(amount, horizontal=False):
+    """Horizontal and horizontal scrolling."""
+    if horizontal and amount < 0:
+        button = 6  # left
+    elif horizontal and amount >= 0:
+        button = 7  # right
+    elif not horizontal and amount < 0:
+        button = 4  # up
+    elif not horizontal and amount >= 0:
+        button = 5  # down
     else:
         return
     for _ in range(abs(amount)):
