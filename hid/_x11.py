@@ -191,7 +191,7 @@ key_codes = {
     "KEY_F22": _display.keysym_to_keycode(string_to_keysym("F22")),
     "KEY_F23": _display.keysym_to_keycode(string_to_keysym("F23")),
     "KEY_F24": _display.keysym_to_keycode(string_to_keysym("F24")),
-    "BTN_LEFT": _display.keysym_to_keycode(string_to_keysym("1")),
+    "BTN_LEFT": 1,
     "BTN_RIGHT": 3,
     "BTN_MIDDLE": 2,
     "BTN_SIDE": 7,
