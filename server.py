@@ -6,7 +6,6 @@ import evdev.ecodes as k
 
 from config import CONFIG as c
 from client import All1InputClientProtocol
-from keytranslation import keytable
 
 #pylint: disable=invalid-name,unused-argument,no-member
 mouse_movement = [0, 0, 0]
