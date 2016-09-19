@@ -166,6 +166,8 @@ async def dispatch_events(file_name, device):
 
             elif event.type == evdev.ecodes.EV_SYN:
                 pass
+            elif event.type == 4:  # msc event
+                pass
             elif event.type == evdev.ecodes.EV_KEY:
                 name = ""
                 if event.code in k.KEY:
@@ -182,18 +184,15 @@ async def dispatch_events(file_name, device):
                     # we just pick the first one...
                     key_name = key_name[0]
 
-                if key_name in keytable:
-                    name = keytable[key_name]
-
                 action = ""
                 if event.value == 0:
                     action = "keyUp"
                 elif event.value == 1:
                     action = "keyDown"
                 elif event.value == 2:
-                    action = "keyHold"
+                    action = "" # hold event
 
-                if name != "" and action != "":
+                if action != "":
                     loop.call_soon(partial(
                         clients[current].send,
                         "{} {} ".format(action, name)))
