@@ -168,7 +168,6 @@ async def dispatch_events(file_name, device):
             elif event.type == 4:  # msc event
                 pass
             elif event.type == evdev.ecodes.EV_KEY:
-                name = ""
                 if event.code in k.KEY:
                     ev_table = k.KEY
                 elif event.code in k.BTN:
@@ -194,7 +193,7 @@ async def dispatch_events(file_name, device):
                 if action != "":
                     loop.call_soon(partial(
                         clients[current].send,
-                        "{} {} ".format(action, name)))
+                        "{} {} ".format(action, key_name)))
                 else:
                     print(device.fn, evdev.categorize(event), sep=': ')
             else:
