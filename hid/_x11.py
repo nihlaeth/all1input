@@ -47,7 +47,9 @@ def on_screen(x, y):
 
 def move_to(x, y):
     """Move cursor to x, y."""
-    _display.screen().root.warp_pointer(x, y)
+    # the line below works but button presses don't with this method
+    # _display.screen().root.warp_pointer(x, y)
+    fake_input(_display, X.MotionNotify, x=x, y=y)
     _display.sync()
 
 def scroll(amount, vertical=False):
