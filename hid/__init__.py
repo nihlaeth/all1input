@@ -10,4 +10,4 @@ elif sys.platform == 'darwin':
 elif sys.platform == 'win32':
     pass
 else:
-    from _x11 import key_up, key_down, position, size, on_screen, move_to, scroll
+    from ._x11 import key_up, key_down, position, size, on_screen, move_to, scroll
