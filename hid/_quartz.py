@@ -143,8 +143,8 @@ def scroll(amount, horizontal=False):
             None,
             Quartz.kCGScrollEventUnitLine,
             2,  # Number of wheels(dimensions)
-            direction if horizontal else 0,
-            0 if horizontal else direction)
+            0 if horizontal else direction,
+            direction if horizontal else 0)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, scroll_event)
 
 # False = released, True = pressed
