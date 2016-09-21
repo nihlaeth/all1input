@@ -22,6 +22,7 @@ def key_up(key_name):
         x, y = position()
         click_event = Quartz.CGEventCreateMouseEvent(
             None, event, (x, y), button)
+        Quartz.CGEventSetType(click_event, event)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, click_event)
     elif key_codes[key_name] is None:
         # unimplemented key
@@ -69,6 +70,7 @@ def key_down(key_name):
         x, y = position()
         click_event = Quartz.CGEventCreateMouseEvent(
             None, event, (x, y), button)
+        Quartz.CGEventSetType(click_event, event)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, click_event)
     elif key_codes[key_name] is None:
         # unimplemented key
