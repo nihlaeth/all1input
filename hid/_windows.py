@@ -124,9 +124,10 @@ def move_to(x, y):
 
 def scroll(amount, horizontal=False):
     """Horizontal and horizontal scrolling."""
-    # dwData=amount - No direction or amount right now
     wheel = MOUSEEVENTF_WHEEL if not horizontal else MOUSEEVENTF_HWHEEL
-    scroll_event = Input(type=INPUT_MOUSE, mi=MouseInput(dwFlags=wheel))
+    scroll_event = Input(
+        type=INPUT_MOUSE,
+        mi=MouseInput(dwFlags=wheel, mouseData=amount * 120))
     ctypes.windll.user32.SendInput(
         1,
         ctypes.byref(scroll_event),
