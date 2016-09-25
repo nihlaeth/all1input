@@ -1,4 +1,136 @@
 """Windows input."""
+#pylint: disable=missing-docstring,too-few-public-methods,invalid-name
+import ctypes
+
+KEYEVENTF_KEYUP = 0x0002
+
+INPUT_MOUSE = 0
+INPUT_KEYBOARD = 1
+
+MOUSEEVENTF_WHEEL = 0x0800
+MOUSEEVENTF_HWHEEL = 0x01000
+
+class Point(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_ulong), ("y", ctypes.c_ulong)]
+
+class MouseInput(ctypes.Structure):
+    _fields_ = [
+        ('dx', ctypes.wintypes.LONG),
+        ('dy', ctypes.wintypes.LONG),
+        ('mouseData', ctypes.wintypes.DWORD),
+        ('dwFlags', ctypes.wintypes.DWORD),
+        ('time', ctypes.wintypes.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(ctypes.wintypes.ULONG)),
+        ]
+
+class KeybdInput(ctypes.Structure):
+    _fields_ = [
+        ('wVk', ctypes.wintypes.WORD),
+        ('wScan', ctypes.wintypes.WORD),
+        ('dwFlags', ctypes.wintypes.DWORD),
+        ('time', ctypes.wintypes.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(ctypes.wintypes.ULONG)),
+        ]
+
+class HardwareInput(ctypes.Structure):
+    _fields_ = [
+        ('uMsg', ctypes.wintypes.DWORD),
+        ('wParamL', ctypes.wintypes.WORD),
+        ('wParamH', ctypes.wintypes.DWORD)
+        ]
+
+class Input(ctypes.Structure):
+    class _I(ctypes.Union):
+        _fields_ = [
+            ('mi', MouseInput),
+            ('ki', KeybdInput),
+            ('hi', HardwareInput),
+            ]
+
+    _anonymous_ = ('i', )
+    _fields_ = [
+        ('type', ctypes.wintypes.DWORD),
+        ('i', _I),
+        ]
+
+def key_up(key_name):
+    """Release a key."""
+    if key_codes[key_name] is None:
+        return
+    elif key_name.startswith("BTN_"):
+        button_action = 2 ** (2 * key_codes[key_name])
+        mouse_event = Input(
+            type=INPUT_MOUSE,
+            mi=MouseInput(dwFlags=button_action))
+        ctypes.windll.user32.SendInput(
+            1,
+            ctypes.byref(mouse_event),
+            ctypes.sizeof(mouse_event))
+    else:
+        input_event = Input(
+            type=INPUT_KEYBOARD,
+            ki=KeybdInput(
+                wVk=key_codes[key_name],
+                dwFlags=KEYEVENTF_KEYUP))
+        ctypes.windll.user32.SendInput(
+            1,
+            ctypes.byref(input_event),
+            ctypes.sizeof(input_event))
+
+def key_down(key_name):
+    """Release a key."""
+    if key_codes[key_name] is None:
+        return
+    elif key_name.startswith("BTN_"):
+        button_action = 2 ** (2 * key_codes[key_name] - 1)
+        mouse_event = Input(
+            type=INPUT_MOUSE,
+            mi=MouseInput(dwFlags=button_action))
+        ctypes.windll.user32.SendInput(
+            1,
+            ctypes.byref(mouse_event),
+            ctypes.sizeof(mouse_event))
+    else:
+        input_event = Input(
+            type=INPUT_KEYBOARD,
+            ki=KeybdInput(wVk=key_codes[key_name]))
+        ctypes.windll.user32.SendInput(
+            1,
+            ctypes.byref(input_event),
+            ctypes.sizeof(input_event))
+
+def size():
+    """Get size of the screen."""
+    return (
+        ctypes.windll.user32.GetSystemMetrics(0),
+        ctypes.windll.user32.GetSystemMetrics(1))
+
+def position():
+    """Get current cursor position."""
+    cursor = Point()
+    ctypes.windll.user32.GetCursorPos(ctypes.byref(cursor))
+    return (cursor.x, cursor.y)
+
+def on_screen(x, y):
+    """Determine if x, y is a position on the screen."""
+    width, height = size()
+    if x < 0 or x >= width or y < 0 or y >= height:
+        return False
+    return True
+
+def move_to(x, y):
+    """Move cursor to x, y."""
+    ctypes.windll.user32.SetCursorPos(x, y)
+
+def scroll(amount, horizontal=False):
+    """Horizontal and horizontal scrolling."""
+    # dwData=amount - No direction or amount right now
+    wheel = MOUSEEVENTF_WHEEL if not horizontal else MOUSEEVENTF_HWHEEL
+    scroll_event = Input(type=INPUT_MOUSE, mi=MouseInput(dwFlags=wheel))
+    ctypes.windll.user32.SendInput(
+        1,
+        ctypes.byref(scroll_event),
+        ctypes.sizeof(scroll_event))
 
 key_codes = {
     "KEY_ESC": 0x1B,
