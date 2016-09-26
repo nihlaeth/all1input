@@ -1,4 +1,5 @@
 """Read input decices and pass on data."""
+import ssl
 import asyncio
 from functools import partial
 import evdev
@@ -232,17 +233,31 @@ def update_devices():
         loop.call_later(3, update_devices)
 
 if __name__ == "__main__":
+    server_ssl = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+    server_ssl.verify_mode = ssl.CERT_REQUIRED
+    server_ssl.load_cert_chain(
+        certfile="{}.crt".format(c.server_cert_name),
+        keyfile="{}.key".format(c.server_cert_name))
+    server_ssl.load_verify_locations("{}.pem".format(c.root_cert_name))
+    client_ssl = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+    client_ssl.verify_mode = ssl.CERT_REQUIRED
+    client_ssl.load_cert_chain(
+        certfile="{}.crt".format(c.cert_name),
+        keyfile="{}.key".format(c.cert_name))
+    client_ssl.load_verify_locations("{}.pem".format(c.root_cert_name))
+
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     devices = {}
     ignore_devices = []
     loop = asyncio.get_event_loop()
     coro_server = loop.create_server(
-        All1InputServerClientProtocol, c.ip, c.port)
+        All1InputServerClientProtocol, c.ip, c.port, ssl=server_ssl)
     server = loop.run_until_complete(coro_server)
     coro_client = loop.create_connection(
         partial(All1InputClientProtocol, loop),
         c.ip,
-        c.port)
+        c.port,
+        ssl=client_ssl)
     loop.run_until_complete(coro_client)
     loop.call_later(1, update_devices)
     loop.call_later(0.01, move_mouse)

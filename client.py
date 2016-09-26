@@ -2,6 +2,7 @@
 from functools import partial
 import asyncio
 from time import sleep
+import ssl
 
 from config import CONFIG as c
 import mouse
@@ -64,6 +65,12 @@ class All1InputClientProtocol(asyncio.Protocol):
         self.loop.stop()
 
 if __name__ == "__main__":
+    sslcontext = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
+    sslcontext.verify_mode = ssl.CERT_REQUIRED
+    sslcontext.load_cert_chain(
+        certfile="{}.crt".format(c.cert_name),
+        keyfile="{}.key".format(c.cert_name))
+    sslcontext.load_verify_locations("{}.pem".format(c.root_cert_name))
     loop = asyncio.get_event_loop()
     try:
         while True:
@@ -71,7 +78,8 @@ if __name__ == "__main__":
                 coro = loop.create_connection(
                     partial(All1InputClientProtocol, loop),
                     c.ip,
-                    c.port)
+                    c.port,
+                    ssl=sslcontext)
                 loop.run_until_complete(coro)
                 loop.run_forever()
             except ConnectionRefusedError:

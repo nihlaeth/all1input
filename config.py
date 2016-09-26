@@ -1,4 +1,5 @@
 """Manage configuration."""
+#pylint: disable=invalid-name,too-few-public-methods
 import configparser
 
 class Config():
@@ -10,8 +11,13 @@ class Config():
         self._config.read(config_file)
 
     def __getattr__(self, name):
-        host = ("ip", "port", "wrap")
-        client = ("name", "mouse_acceleration", "scroll_acceleration")
+        host = ("ip", "port", "wrap", "server_cert_name")
+        client = (
+            "name",
+            "mouse_acceleration",
+            "scroll_acceleration",
+            "cert_name",
+            "root_cert_name")
         section = ""
         if name == "layout":
             return self._get_layout()
@@ -26,9 +32,12 @@ class Config():
             "ip": "127.0.0.1",
             "port": "6913",
             "wrap": False,
+            "server_cert_name": "server",
             "name": "localhost",
             "mouse_acceleration": "2",
-            "scroll_acceleration": "10"}
+            "scroll_acceleration": "10",
+            "cert_name": "client",
+            "root_cert_name": "root"}
         booleans = ("wrap")
         if name in booleans:
             return self._config.getboolean(section, name, fallback=fallback[name])
