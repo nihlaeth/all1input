@@ -104,7 +104,6 @@ class All1InputServerClientProtocol(asyncio.Protocol):
 
     def data_received(self, data):
         message = data.decode()
-        print('Data received: {!r}'.format(message))
 
         if message.startswith("client "):
             name = message[7:]
@@ -122,7 +121,6 @@ class All1InputServerClientProtocol(asyncio.Protocol):
 
     def send(self, command):
         """Send command to client."""
-        # print('Send: {!r}'.format(message))
         self.transport.write(command.encode())
 
 

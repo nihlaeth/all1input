@@ -27,14 +27,12 @@ class All1InputClientProtocol(asyncio.Protocol):
             if cmd == "":
                 continue
             elif cmd == "enter":
-                print("{}: got enter cmd".format(c.name))
                 direction = tokens.pop(0)
                 percentage = float(tokens.pop(0))
                 mouse.enter(direction, percentage)
             elif cmd == "exit":
                 for key in keyboard.keyboard:
                     keyboard.keyboard[key].exit()
-                print("{}: exit confirmed - release keys".format(c.name))
             elif cmd == "keyUp":
                 name = tokens.pop(0)
                 keyboard.key(name, "release")
@@ -52,7 +50,6 @@ class All1InputClientProtocol(asyncio.Protocol):
                 if result == "ok":
                     pass
                 elif result.startswith("exit "):
-                    print("{}: signal exit".format(c.name))
                     self.transport.write(result.encode())
                 else:
                     print(result)
