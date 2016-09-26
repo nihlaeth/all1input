@@ -53,13 +53,14 @@ def create_root_ca(root_cert_name):
         pkeyfile.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
         pkeyfile.close()
 
-def create_certificate(cert_name, serverside, root_cert_name):
+def create_certificate(cert_name, serverside, root_cert_name, ip=None):
     """
     Create signed certificate.
 
     cert_name: name - `cert_name`.crt and `cert_name`.key are created
     serverside: bool - is this a server certificate
     root_cert_name: name of root ca cert to use
+    ip: ip address of the server
 
     Raises FileExists if cert files exist.
     """
@@ -89,7 +90,7 @@ def create_certificate(cert_name, serverside, root_cert_name):
         cert.add_extensions([crypto.X509Extension(
             b"subjectAltName",
             False,
-            b"DNS:test1.example.com,DNS:test2.example.com")])
+            b"IP:{}".format(ip))])
 
     cert.set_issuer(ca_cert.get_subject())
 
@@ -129,7 +130,7 @@ if __name__ == "__main__":
             print("Root CA already exists")
         try:
             print("Making server certificate")
-            create_certificate(c.server_cert_name, True, c.root_cert_name)
+            create_certificate(c.server_cert_name, True, c.root_cert_name, c.ip)
         except FileExists:
             print("Server cert already exists")
         try:
