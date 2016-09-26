@@ -90,7 +90,7 @@ def create_certificate(cert_name, serverside, root_cert_name, ip=None):
         cert.add_extensions([crypto.X509Extension(
             b"subjectAltName",
             False,
-            b"IP:{}".format(ip))])
+            b"IP:%s" % ip)])
 
     cert.set_issuer(ca_cert.get_subject())
 
