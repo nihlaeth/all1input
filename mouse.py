@@ -4,10 +4,10 @@ import hid
 
 from config import CONFIG as c
 
-size_x, size_y = hid.size()
 
 def enter(exit_direction, percentage):
     """Enter screen in logical place."""
+    size_x, size_y = hid.size()
     if exit_direction == "up":
         hid.move_to(int((size_x - 1) * percentage), size_y - 1)
     elif exit_direction == "down":
@@ -21,6 +21,7 @@ def enter(exit_direction, percentage):
 
 def move(delta_x, delta_y, delta_wheel):
     """Move mouse to new position and/or exit screen."""
+    size_x, size_y = hid.size()
     pos_x, pos_y = hid.position()
     fut_x = pos_x + delta_x * c.mouse_acceleration
     fut_y = pos_y + delta_y * c.mouse_acceleration
