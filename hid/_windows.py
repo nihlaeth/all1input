@@ -122,11 +122,11 @@ def on_screen(x, y):
 
 def show_cursor():
     """Make cursor visible."""
-    ctypes.windll.user32.ShowCursor(True)
+    ctypes.windll.user32.ShowCursor(1)
 
 def hide_cursor():
     """Make cursor invisible."""
-    ctypes.windll.user32.ShowCursor(False)
+    ctypes.windll.user32.ShowCursor(0)
 
 def move_to(x, y):
     """Move cursor to x, y."""
