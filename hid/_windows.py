@@ -1,6 +1,7 @@
 """Windows input."""
 #pylint: disable=missing-docstring,too-few-public-methods,invalid-name
 import ctypes
+from ctypes import wintypes
 
 KEYEVENTF_KEYUP = 0x0002
 
@@ -15,28 +16,28 @@ class Point(ctypes.Structure):
 
 class MouseInput(ctypes.Structure):
     _fields_ = [
-        ('dx', ctypes.wintypes.LONG),
-        ('dy', ctypes.wintypes.LONG),
-        ('mouseData', ctypes.wintypes.DWORD),
-        ('dwFlags', ctypes.wintypes.DWORD),
-        ('time', ctypes.wintypes.DWORD),
-        ('dwExtraInfo', ctypes.POINTER(ctypes.wintypes.ULONG)),
+        ('dx', wintypes.LONG),
+        ('dy', wintypes.LONG),
+        ('mouseData', wintypes.DWORD),
+        ('dwFlags', wintypes.DWORD),
+        ('time', wintypes.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(wintypes.ULONG)),
         ]
 
 class KeybdInput(ctypes.Structure):
     _fields_ = [
-        ('wVk', ctypes.wintypes.WORD),
-        ('wScan', ctypes.wintypes.WORD),
-        ('dwFlags', ctypes.wintypes.DWORD),
-        ('time', ctypes.wintypes.DWORD),
-        ('dwExtraInfo', ctypes.POINTER(ctypes.wintypes.ULONG)),
+        ('wVk', wintypes.WORD),
+        ('wScan', wintypes.WORD),
+        ('dwFlags', wintypes.DWORD),
+        ('time', wintypes.DWORD),
+        ('dwExtraInfo', ctypes.POINTER(wintypes.ULONG)),
         ]
 
 class HardwareInput(ctypes.Structure):
     _fields_ = [
-        ('uMsg', ctypes.wintypes.DWORD),
-        ('wParamL', ctypes.wintypes.WORD),
-        ('wParamH', ctypes.wintypes.DWORD)
+        ('uMsg', wintypes.DWORD),
+        ('wParamL', wintypes.WORD),
+        ('wParamH', wintypes.DWORD)
         ]
 
 class Input(ctypes.Structure):
@@ -49,7 +50,7 @@ class Input(ctypes.Structure):
 
     _anonymous_ = ('i', )
     _fields_ = [
-        ('type', ctypes.wintypes.DWORD),
+        ('type', wintypes.DWORD),
         ('i', _I),
         ]
 
@@ -58,6 +59,7 @@ def key_up(key_name):
     if key_codes[key_name] is None:
         return
     elif key_name.startswith("BTN_"):
+        # fixme: xbuttons (they use mouseData)
         button_action = 2 ** (2 * key_codes[key_name])
         mouse_event = Input(
             type=INPUT_MOUSE,
