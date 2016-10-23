@@ -54,6 +54,17 @@ class Input(ctypes.Structure):
         ('i', _I),
         ]
 
+class MouseKeys(ctypes.Structure):
+    _fields_ = [
+        ('cbSize', wintypes.DWORD),
+        ('dwFlags', wintypes.DWORD),
+        ('iMaxSpeed', wintypes.DWORD),
+        ('iTimeToMaxSpeed', wintypes.DWORD),
+        ('iCtrlSpeed', wintypes.DWORD),
+        ('dwReserved1', wintypes.DWORD),
+        ('dwReserved2', wintypes.DWORD),
+        ]
+
 def key_up(key_name):
     """Release a key."""
     if key_codes[key_name] is None:
@@ -120,13 +131,38 @@ def on_screen(x, y):
         return False
     return True
 
+
+SPI_GETMOUSEKEYS = 0x0036
+SPI_SETMOUSEKEYS = 0x0037
+SPIF_UPDATEINIFILE = 0x1
+
+MKF_MOUSEKEYSON = 0x00000001
+MKF_AVAILABLE = 0x00000002
+MKF_REPLACENUMBERS = 0x00000080
+
+
 def show_cursor():
     """Make cursor visible."""
-    ctypes.windll.user32.ShowCursor(1)
+    # ctypes.windll.user32.ShowCursor(1)
+    mouse_keys = MouseKeys()
+    SystemParametersInfo = ctypes.windll.user32.SystemParametersInfoA
+    SystemParametersInfo(
+        SPI_GETMOUSEKEYS,
+        ctypes.sizeof(mouse_keys),
+        ctypes.byref(mouse_keys),
+        0)
+    mouse_keys.dwFlags = MKF_MOUSEKEYSON | MKF_AVAILABLE
+    # TODO: use mkf_replacenumbers with numlock state to hide mousekeys from user
+    SystemParametersInfo(
+        SPI_SETMOUSEKEYS,
+        ctypes.sizeof(mouse_keys),
+        ctypes.byref(mouse_keys),
+        SPIF_UPDATEINIFILE)
 
 def hide_cursor():
     """Make cursor invisible."""
-    ctypes.windll.user32.ShowCursor(0)
+    # ctypes.windll.user32.ShowCursor(0)
+    pass
 
 def move_to(x, y):
     """Move cursor to x, y."""
