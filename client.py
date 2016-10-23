@@ -31,6 +31,7 @@ class All1InputClientProtocol(asyncio.Protocol):
                 percentage = float(tokens.pop(0))
                 mouse.enter(direction, percentage)
             elif cmd == "exit":
+                mouse.exit_()
                 for key in keyboard.keyboard:
                     keyboard.keyboard[key].exit()
             elif cmd == "keyUp":

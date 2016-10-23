@@ -18,6 +18,11 @@ def enter(exit_direction, percentage):
         hid.move_to(0, int((size_y - 1) * percentage))
     else:
         print("unknown exit direction {}".format(exit_direction))
+    hid.show_cursor()
+
+def exit_():
+    """Hide mouse cursor."""
+    hid.hide_cursor()
 
 def move(delta_x, delta_y, delta_wheel):
     """Move mouse to new position and/or exit screen."""

@@ -22,7 +22,6 @@ def key_up(key_name):
         x, y = position()
         click_event = Quartz.CGEventCreateMouseEvent(
             None, event, (x, y), button)
-        Quartz.CGEventSetType(click_event, event)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, click_event)
     elif key_codes[key_name] is None:
         # unimplemented key
@@ -70,7 +69,6 @@ def key_down(key_name):
         x, y = position()
         click_event = Quartz.CGEventCreateMouseEvent(
             None, event, (x, y), button)
-        Quartz.CGEventSetType(click_event, event)
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, click_event)
     elif key_codes[key_name] is None:
         # unimplemented key
@@ -114,6 +112,14 @@ def on_screen(x, y):
     if x < 0 or x >= width or y < 0 or y >= height:
         return False
     return True
+
+def show_cursor():
+    """Make cursor visible."""
+    pass
+
+def hide_cursor():
+    """Make cursor invisible."""
+    pass
 
 def move_to(x, y):
     """Move cursor to x, y."""

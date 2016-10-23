@@ -45,6 +45,14 @@ def on_screen(x, y):
         return False
     return True
 
+def show_cursor():
+    """Make cursor visible."""
+    pass
+
+def hide_cursor():
+    """Make cursor invisible."""
+    pass
+
 def move_to(x, y):
     """Move cursor to x, y."""
     # the line below works but button presses don't with this method
