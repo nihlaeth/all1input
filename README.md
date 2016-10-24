@@ -17,6 +17,8 @@ I also assume you have some technical know-how. At this time I do not have time 
 * after a resolution change in osx, the mouse cursor can only move horizontally (bug in xcode?)
 * keyboards connected to the linux host are stuck in numlock mode
 
+About the invisible cursor problem: I tried fixing it by turning on mouse keys, which did nothing. So I turned it on manually, which again didn't change anything. For now my solution is to have a mouse connected to the Windows client at all times, even though we don't use it.
+
 ## Todo
 * hide cursor on screen exit (wishful thinking? windows does not allow global mouse cursor visibility control)
 * transfer keystate at screen enter
