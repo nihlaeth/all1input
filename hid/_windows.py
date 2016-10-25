@@ -69,7 +69,7 @@ class MouseKeys(ctypes.Structure):
 
 def _err(return_value):
     if return_value == 0:
-        format_message(ctypes.windll.user32.GetLastError())
+        format_message(ctypes.windll.kernel32.GetLastError())
 
 def key_up(key_name):
     """Release a key."""
