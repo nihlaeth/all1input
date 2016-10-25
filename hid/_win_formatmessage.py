@@ -4,12 +4,7 @@ Format windows error messages.
 Grabbed from:
     https://gist.github.com/EBNull/6135237#file-formatmessagesystem-py
 """
-# pylint: disable=used-before-assignment,invalid-name,missing-docstring,line-too-long
-__all__ = (
-    format_message,
-    LCID_ENGLISH,
-    LCID_NEUTRAL,
-)
+# pylint: disable=invalid-name,missing-docstring,line-too-long
 
 import ctypes
 import ctypes.wintypes
