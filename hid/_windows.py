@@ -3,6 +3,8 @@
 import ctypes
 from ctypes import wintypes
 
+from ._win_formatmessage import format_message
+
 KEYEVENTF_KEYUP = 0x0002
 
 INPUT_MOUSE = 0
@@ -65,6 +67,10 @@ class MouseKeys(ctypes.Structure):
         ('dwReserved2', wintypes.DWORD),
         ]
 
+def _err(return_value):
+    if return_value == 0:
+        format_message(ctypes.windll.user32.GetLastError())
+
 def key_up(key_name):
     """Release a key."""
     if key_codes[key_name] is None:
@@ -75,20 +81,20 @@ def key_up(key_name):
         mouse_event = Input(
             type=INPUT_MOUSE,
             mi=MouseInput(dwFlags=button_action))
-        ctypes.windll.user32.SendInput(
+        _err(ctypes.windll.user32.SendInput(
             1,
             ctypes.byref(mouse_event),
-            ctypes.sizeof(mouse_event))
+            ctypes.sizeof(mouse_event)))
     else:
         input_event = Input(
             type=INPUT_KEYBOARD,
             ki=KeybdInput(
                 wVk=key_codes[key_name],
                 dwFlags=KEYEVENTF_KEYUP))
-        ctypes.windll.user32.SendInput(
+        _err(ctypes.windll.user32.SendInput(
             1,
             ctypes.byref(input_event),
-            ctypes.sizeof(input_event))
+            ctypes.sizeof(input_event)))
 
 def key_down(key_name):
     """Release a key."""
@@ -99,18 +105,18 @@ def key_down(key_name):
         mouse_event = Input(
             type=INPUT_MOUSE,
             mi=MouseInput(dwFlags=button_action))
-        ctypes.windll.user32.SendInput(
+        _err(ctypes.windll.user32.SendInput(
             1,
             ctypes.byref(mouse_event),
-            ctypes.sizeof(mouse_event))
+            ctypes.sizeof(mouse_event)))
     else:
         input_event = Input(
             type=INPUT_KEYBOARD,
             ki=KeybdInput(wVk=key_codes[key_name]))
-        ctypes.windll.user32.SendInput(
+        _err(ctypes.windll.user32.SendInput(
             1,
             ctypes.byref(input_event),
-            ctypes.sizeof(input_event))
+            ctypes.sizeof(input_event)))
 
 def size():
     """Get size of the screen."""
@@ -121,7 +127,7 @@ def size():
 def position():
     """Get current cursor position."""
     cursor = Point()
-    ctypes.windll.user32.GetCursorPos(ctypes.byref(cursor))
+    _err(ctypes.windll.user32.GetCursorPos(ctypes.byref(cursor)))
     return (cursor.x, cursor.y)
 
 def on_screen(x, y):
@@ -146,18 +152,18 @@ def show_cursor():
     # ctypes.windll.user32.ShowCursor(1)
     mouse_keys = MouseKeys()
     SystemParametersInfo = ctypes.windll.user32.SystemParametersInfoA
-    SystemParametersInfo(
+    _err(SystemParametersInfo(
         SPI_GETMOUSEKEYS,
         ctypes.sizeof(mouse_keys),
         ctypes.byref(mouse_keys),
-        0)
+        0))
     mouse_keys.dwFlags = MKF_MOUSEKEYSON | MKF_AVAILABLE
     # TODO: use mkf_replacenumbers with numlock state to hide mousekeys from user
-    SystemParametersInfo(
+    _err(SystemParametersInfo(
         SPI_SETMOUSEKEYS,
         ctypes.sizeof(mouse_keys),
         ctypes.byref(mouse_keys),
-        SPIF_UPDATEINIFILE)
+        SPIF_UPDATEINIFILE))
 
 def hide_cursor():
     """Make cursor invisible."""
@@ -166,7 +172,7 @@ def hide_cursor():
 
 def move_to(x, y):
     """Move cursor to x, y."""
-    ctypes.windll.user32.SetCursorPos(x, y)
+    _err(ctypes.windll.user32.SetCursorPos(x, y))
 
 def scroll(amount, horizontal=False):
     """Horizontal and horizontal scrolling."""
@@ -174,10 +180,10 @@ def scroll(amount, horizontal=False):
     scroll_event = Input(
         type=INPUT_MOUSE,
         mi=MouseInput(dwFlags=wheel, mouseData=amount * 120))
-    ctypes.windll.user32.SendInput(
+    _err(ctypes.windll.user32.SendInput(
         1,
         ctypes.byref(scroll_event),
-        ctypes.sizeof(scroll_event))
+        ctypes.sizeof(scroll_event)))
 
 key_codes = {
     "KEY_ESC": 0x1B,
