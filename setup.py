@@ -12,7 +12,7 @@ setup(
     extras_require={
         ':sys_platform == "win32"': [],
         ':sys_platform == "darwin"': [
-            'pyobjc-core', 'pyobjc', 'pyobjc-framework-Quartz', 'AppKit'],
+            'pyobjc-core', 'pyobjc-framework-Quartz', 'AppKit'],
         ':"linux" in sys_platform': ['python3-xlib', 'evdev']},
     entry_points={
         'console_scripts': [
