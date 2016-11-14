@@ -1,8 +1,7 @@
 """Mouse control."""
 #pylint: disable=invalid-name,unused-argument,import-error
-import hid
-
-from config import CONFIG as c
+from all1input import hid
+from all1input.config import CONFIG as c
 
 
 def enter(exit_direction, percentage):

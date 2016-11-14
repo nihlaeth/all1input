@@ -1,6 +1,6 @@
 """Keyboard control."""
 #pylint: disable=invalid-name,unused-argument,import-error
-import hid
+from all1input import hid
 
 class Key():
 
