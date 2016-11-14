@@ -12,7 +12,9 @@ setup(
     extras_require={
         ':sys_platform == "win32"': [],
         ':sys_platform == "darwin"': [
-            'pyobjc-core', 'pyobjc-framework-Quartz', 'AppKit'],
+            # AppKit can't be installed on my osx 10.8 box, but
+            # can still be imported
+            'pyobjc-core', 'pyobjc-framework-Quartz'],
         ':"linux" in sys_platform': ['python3-xlib', 'evdev']},
     entry_points={
         'console_scripts': [
