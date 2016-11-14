@@ -7,6 +7,7 @@ setup(
     description='software kvm',
     author='nihlaeth',
     author_email='info@nihlaeth.nl',
+    python_requires='>=3.5',
     packages=find_packages(),
     package_data={'': ['*.crt', '*.key', '*.pem', '*.cfg']},
     extras_require={
