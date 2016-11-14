@@ -1,20 +1,28 @@
-"""Read input decices and pass on data."""
+"""Read input devices and pass on data to relevant client."""
 import ssl
 import asyncio
 from functools import partial
 import evdev
 import evdev.ecodes as k
+from pkg_resources import resource_filename, Requirement, cleanup_resources
 
-from config import CONFIG as c
-from client import All1InputClientProtocol
+from all1input.config import CONFIG as c
+from all1input.client import All1InputClientProtocol
 
-#pylint: disable=invalid-name,unused-argument,no-member
+# pylint: disable=invalid-name,unused-argument,no-member,too-many-branches
+# pylint: disable=attribute-defined-outside-init,global-statement
+# TODO: reduce number of globals
 mouse_movement = [0, 0, 0]
 
 STOP = False
 
 clients = {}
 current = None
+
+loop = None
+ignore_devices = None
+all_devices = None
+devices = None
 
 def move_in_matrix(direction):
     """Traverse matrix to find which client to move to."""
@@ -216,6 +224,7 @@ def match_dev(name):
     return False
 
 def update_devices():
+    """Scan connected devices and grab relevant ones."""
     for file_name in evdev.list_devices():
         if file_name not in devices and file_name not in ignore_devices:
             dev = evdev.InputDevice(file_name)
@@ -230,19 +239,34 @@ def update_devices():
     if not STOP:
         loop.call_later(3, update_devices)
 
-if __name__ == "__main__":
+def start():
+    """Start server."""
+    global loop, ignore_devices, all_devices, STOP, devices
+    req = Requirement.parse("all1input")
     server_ssl = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
     server_ssl.verify_mode = ssl.CERT_REQUIRED
     server_ssl.load_cert_chain(
-        certfile="{}.crt".format(c.server_cert_name),
-        keyfile="{}.key".format(c.server_cert_name))
-    server_ssl.load_verify_locations("{}.pem".format(c.root_cert_name))
+        certfile=resource_filename(
+            req,
+            "all1input/{}.crt".format(c.server_cert_name)),
+        keyfile=resource_filename(
+            req,
+            "all1input/{}.key".format(c.server_cert_name)))
+    server_ssl.load_verify_locations(resource_filename(
+        req,
+        "all1input/{}.pem".format(c.root_cert_name)))
     client_ssl = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
     client_ssl.verify_mode = ssl.CERT_REQUIRED
     client_ssl.load_cert_chain(
-        certfile="{}.crt".format(c.cert_name),
-        keyfile="{}.key".format(c.cert_name))
-    client_ssl.load_verify_locations("{}.pem".format(c.root_cert_name))
+        certfile=resource_filename(
+            req,
+            "all1input/{}.crt".format(c.cert_name)),
+        keyfile=resource_filename(
+            req,
+            "all1input/{}.key".format(c.cert_name)))
+    client_ssl.load_verify_locations(resource_filename(
+        req,
+        "all1input/{}.pem".format(c.root_cert_name)))
 
     all_devices = [evdev.InputDevice(fn) for fn in evdev.list_devices()]
     devices = {}
@@ -270,3 +294,4 @@ if __name__ == "__main__":
         server.close()
         loop.run_until_complete(server.wait_closed())
         loop.close()
+        cleanup_resources()

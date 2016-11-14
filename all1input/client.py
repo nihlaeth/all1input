@@ -3,10 +3,11 @@ from functools import partial
 import asyncio
 from time import sleep
 import ssl
+from pkg_resources import resource_filename, Requirement, cleanup_resources
 
-from config import CONFIG as c
-import mouse
-import keyboard
+from all1input.config import CONFIG as c
+from all1input import mouse
+from all1input import keyboard
 
 class All1InputClientProtocol(asyncio.Protocol):
 
@@ -20,6 +21,7 @@ class All1InputClientProtocol(asyncio.Protocol):
         self.transport = transport
         transport.write("client {}".format(c.name).encode())
 
+    # pylint: disable=too-many-branches
     def data_received(self, data):
         tokens = data.decode().split(" ")
         while len(tokens) > 0:
@@ -62,13 +64,21 @@ class All1InputClientProtocol(asyncio.Protocol):
         print('The server closed the connection')
         self.loop.stop()
 
-if __name__ == "__main__":
+def start():
+    """Start client."""
     sslcontext = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
     sslcontext.verify_mode = ssl.CERT_REQUIRED
+    req = Requirement.parse("all1input")
     sslcontext.load_cert_chain(
-        certfile="{}.crt".format(c.cert_name),
-        keyfile="{}.key".format(c.cert_name))
-    sslcontext.load_verify_locations("{}.pem".format(c.root_cert_name))
+        certfile=resource_filename(
+            req,
+            "all1input/{}.crt".format(c.cert_name)),
+        keyfile=resource_filename(
+            req,
+            "all1input/{}.key".format(c.cert_name)))
+    sslcontext.load_verify_locations(resource_filename(
+        req,
+        "all1input/{}.pem".format(c.root_cert_name)))
     loop = asyncio.get_event_loop()
     try:
         while True:
@@ -87,3 +97,4 @@ if __name__ == "__main__":
         pass
     finally:
         loop.close()
+        cleanup_resources()

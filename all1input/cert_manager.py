@@ -5,8 +5,9 @@ import sys
 import argparse
 from os.path import isfile
 from OpenSSL import crypto
+from pkg_resources import resource_filename, Requirement, cleanup_resources
 
-from config import CONFIG as c
+from all1input.config import CONFIG as c
 
 class FileExists(Exception):
 
@@ -18,7 +19,12 @@ def create_root_ca(root_cert_name):
 
     Raises FileExists if above mentioned files exist.
     """
-    if isfile("{}.pem".format(root_cert_name)) or isfile("{}.key".format(root_cert_name)):
+    req = Requirement.parse("all1input")
+    pem_file = resource_filename(
+        req, "all1input/{}.pem".format(root_cert_name))
+    key_file = resource_filename(
+        req, "all1input/{}.key".format(root_cert_name))
+    if isfile(pem_file) or isfile(key_file):
         raise FileExists()
     pkey = crypto.PKey()
     pkey.generate_key(crypto.TYPE_RSA, 4096)
@@ -45,14 +51,15 @@ def create_root_ca(root_cert_name):
         b"authorityKeyIdentifier", False, b"keyid:always", issuer=cert)])
     cert.sign(pkey, "sha1")
 
-    with open("{}.pem".format(root_cert_name), "wb") as certfile:
+    with open(pem_file, "wb") as certfile:
         certfile.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
         certfile.close()
 
-    with open("{}.key".format(root_cert_name), "wb") as pkeyfile:
+    with open(key_file, "wb") as pkeyfile:
         pkeyfile.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
         pkeyfile.close()
 
+# pylint: disable=invalid-name,too-many-locals
 def create_certificate(cert_name, serverside, root_cert_name, ip=None):
     """
     Create signed certificate.
@@ -64,14 +71,21 @@ def create_certificate(cert_name, serverside, root_cert_name, ip=None):
 
     Raises FileExists if cert files exist.
     """
-    cert_filename = "{}.crt".format(cert_name)
-    pkey_filename = "{}.key".format(cert_name)
+    req = Requirement.parse("all1input")
+    cert_filename = resource_filename(
+        req, "all1input/{}.crt".format(cert_name))
+    pkey_filename = resource_filename(
+        req, "all1input/{}.key".format(cert_name))
+    root_pem = resource_filename(
+        req, "all1input/{}.pem".format(root_cert_name))
+    root_key = resource_filename(
+        req, "all1input/{}.key".format(root_cert_name))
     if isfile(cert_filename) or isfile(pkey_filename):
         raise FileExists()
-    rootpem = open("{}.pem".format(root_cert_name), "rb").read()
-    rootkey = open("{}.key".format(root_cert_name), "rb").read()
-    ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, rootpem)
-    ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, rootkey)
+    rootpem_f = open(root_pem, "rb").read()
+    rootkey_f = open(root_key, "rb").read()
+    ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, rootpem_f)
+    ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, rootkey_f)
 
     pkey = crypto.PKey()
     pkey.generate_key(crypto.TYPE_RSA, 2048)
@@ -106,38 +120,50 @@ def create_certificate(cert_name, serverside, root_cert_name, ip=None):
         pkeyfile.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
         pkeyfile.close()
 
-if __name__ == "__main__":
-    PARSER = argparse.ArgumentParser(
+# pylint: disable=too-many-branches
+def start():
+    """Start cert manager."""
+    parser = argparse.ArgumentParser(
         prog="cert_manager",
         description='Create certificates for all1input.')
-    PARSER.add_argument(
+    parser.add_argument(
         'action',
         choices=["all", "client"],
         help=("all: create root, server and client cert from config |"
               "client: creates client certificate with NAME"))
-    PARSER.add_argument(
+    parser.add_argument(
         "--name",
         default="client",
         help="certificate name to use for client certificate")
 
-    ARGS = PARSER.parse_args()
+    args = parser.parse_args()
 
-    if ARGS.action == "all":
+    if args.action == "all":
         try:
             print("Making root CA")
             create_root_ca(c.root_cert_name)
         except FileExists:
             print("Root CA already exists")
+        finally:
+            cleanup_resources()
         try:
             print("Making server certificate")
-            create_certificate(c.server_cert_name, True, c.root_cert_name, c.ip)
+            create_certificate(
+                c.server_cert_name, True, c.root_cert_name, c.ip)
         except FileExists:
             print("Server cert already exists")
+        finally:
+            cleanup_resources()
         try:
             print("Making client certificate")
             create_certificate(c.cert_name, False, c.root_cert_name)
         except FileExists:
             print("Client cert already exists")
-    elif ARGS.action == "client":
-        print("Making client certificate")
-        create_certificate(ARGS.name, False, c.root_cert_name)
+        finally:
+            cleanup_resources()
+    elif args.action == "client":
+        try:
+            print("Making client certificate")
+            create_certificate(args.name, False, c.root_cert_name)
+        finally:
+            cleanup_resources()

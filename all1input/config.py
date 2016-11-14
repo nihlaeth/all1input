@@ -1,6 +1,7 @@
 """Manage configuration."""
 #pylint: disable=invalid-name,too-few-public-methods
 import configparser
+from pkg_resources import resource_filename, Requirement
 
 class Config():
 
@@ -8,7 +9,10 @@ class Config():
 
     def __init__(self, config_file="config.cfg"):
         self._config = configparser.ConfigParser()
-        self._config.read(config_file)
+        self._config.read(resource_filename(
+            Requirement.parse("all1input"),
+            "all1input/{}".format(config_file)))
+        # TODO: cleanup without disturbing resources called by other code
 
     def __getattr__(self, name):
         host = ("ip", "port", "wrap", "server_cert_name")
